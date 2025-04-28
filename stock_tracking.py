@@ -127,14 +127,12 @@ def detail(ticker):
     price_data = get_current_price(ticker)
     company_data = get_company_details(ticker)
     historical_data = get_historical_data(ticker)
-    news = get_latest_news(ticker)
     
     context = {
         "ticker": ticker,
         "price_data": price_data,
         "company_data": company_data,
         "historical_data": historical_data,
-        "news": news
     }
     
     return render_template('stocks/detail.html', **context)
