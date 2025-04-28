@@ -15,7 +15,6 @@ BASE_URL = "https://api.polygon.io"
 STOCKS = ["NVDA", "AAPL"]
 
 def get_current_price(ticker):
-    """Get the current price for a stock ticker"""
     endpoint = f"{BASE_URL}/v2/aggs/ticker/{ticker}/prev"
     params = {
         "apiKey": API_KEY
@@ -26,14 +25,13 @@ def get_current_price(ticker):
         data = response.json()
         
         if response.status_code == 200 and data.get("status") == "OK":
-            # Extract previous day's closing price
             results = data.get("results", [])
             if results:
                 return {
                     "ticker": ticker,
-                    "price": results[0].get("c"),  # Closing price
-                    "volume": results[0].get("v"),  # Volume
-                    "change": results[0].get("c") - results[0].get("o"),  # Change from open
+                    "price": results[0].get("c"),
+                    "volume": results[0].get("v"),
+                    "change": results[0].get("c") - results[0].get("o"),
                     "change_percent": ((results[0].get("c") - results[0].get("o")) / results[0].get("o")) * 100,
                     "timestamp": datetime.fromtimestamp(results[0].get("t") / 1000).strftime('%Y-%m-%d')
                 }
@@ -43,7 +41,6 @@ def get_current_price(ticker):
     return None
 
 def get_company_details(ticker):
-    """Get company details for a stock ticker"""
     endpoint = f"{BASE_URL}/v3/reference/tickers/{ticker}"
     params = {
         "apiKey": API_KEY

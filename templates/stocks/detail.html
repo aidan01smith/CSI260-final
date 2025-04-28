@@ -99,8 +99,8 @@
         const ctx = document.getElementById('priceChart').getContext('2d');
         
         // Extract data for the chart
-        const dates = {{ historical_data|map(attribute='date')|list|tojson }};
-        const closePrices = {{ historical_data|map(attribute='close')|list|tojson }};
+        const dates = JSON.parse('{{ historical_data|map(attribute="date")|list|tojson|safe }}');
+        const closePrices = JSON.parse('{{ historical_data|map(attribute="close")|list|tojson|safe }}');
         
         // Create the chart
         const priceChart = new Chart(ctx, {
