@@ -22,9 +22,9 @@ def get_post(post_id):
 
 app = Flask(__name__)
 
-register_stocks_blueprint(app)
-
 app.config['SECRET_KEY'] = 'flask_secret_key'
+
+register_stocks_blueprint(app)
 
 @app.route('/')
 def index():
