@@ -64,74 +64,6 @@ def get_company_details(ticker):
     
     return None
 
-def get_historical_data(ticker, days=30):
-    """Get historical price data for a stock ticker"""
-    end_date = datetime.now()
-    start_date = end_date - timedelta(days=days)
-    
-    endpoint = f"{BASE_URL}/v2/aggs/ticker/{ticker}/range/1/day/{start_date.strftime('%Y-%m-%d')}/{end_date.strftime('%Y-%m-%d')}"
-    params = {
-        "apiKey": API_KEY,
-        "sort": "asc",
-        "limit": 120
-    }
-    
-    try:
-        response = requests.get(endpoint, params=params)
-        data = response.json()
-        
-        if response.status_code == 200 and data.get("status") == "OK":
-            historical_data = []
-            results = data.get("results", [])
-            
-            for result in results:
-                historical_data.append({
-                    "date": datetime.fromtimestamp(result.get("t") / 1000).strftime('%Y-%m-%d'),
-                    "open": result.get("o"),
-                    "high": result.get("h"),
-                    "low": result.get("l"),
-                    "close": result.get("c"),
-                    "volume": result.get("v")
-                })
-            
-            return historical_data
-    except Exception as e:
-        print(f"Error fetching historical data for {ticker}: {e}")
-    
-    return []
-
-def get_latest_news(ticker, limit=5):
-    """Get latest news for a stock ticker"""
-    endpoint = f"{BASE_URL}/v2/reference/news"
-    params = {
-        "apiKey": API_KEY,
-        "ticker": ticker,
-        "limit": limit,
-        "order": "desc"
-    }
-    
-    try:
-        response = requests.get(endpoint, params=params)
-        data = response.json()
-        
-        if response.status_code == 200 and data.get("status") == "OK":
-            news_articles = []
-            results = data.get("results", [])
-            
-            for result in results:
-                news_articles.append({
-                    "title": result.get("title"),
-                    "source": result.get("publisher", {}).get("name"),
-                    "published_utc": datetime.fromisoformat(result.get("published_utc").replace('Z', '+00:00')).strftime('%Y-%m-%d %H:%M:%S'),
-                    "article_url": result.get("article_url"),
-                    "description": result.get("description")
-                })
-            
-            return news_articles
-    except Exception as e:
-        print(f"Error fetching news for {ticker}: {e}")
-    
-    return []
 
 # Create routes for the stock tracking functionality
 @stocks_bp.route('/')
@@ -150,27 +82,6 @@ def index():
             }
     
     return render_template('stocks/index.html', stock_data=stock_data)
-
-@stocks_bp.route('/detail/<ticker>')
-def detail(ticker):
-    """Detailed view for a specific stock"""
-    if ticker not in STOCKS:
-        return "Stock not tracked", 404
-    
-    price_data = get_current_price(ticker)
-    company_data = get_company_details(ticker)
-    historical_data = get_historical_data(ticker)
-    news = get_latest_news(ticker)
-    
-    context = {
-        "ticker": ticker,
-        "price_data": price_data,
-        "company_data": company_data,
-        "historical_data": historical_data,
-        "news": news
-    }
-    
-    return render_template('stocks/detail.html', **context)
 
 @stocks_bp.route('/api/data/<ticker>')
 def api_data(ticker):
