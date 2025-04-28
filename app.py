@@ -2,6 +2,7 @@
 import sqlite3
 from flask import Flask, render_template, request, url_for, flash, redirect
 from werkzeug.exceptions import abort
+from stock_tracking import register_stocks_blueprint
 
 
 def get_db_connection():
@@ -20,6 +21,9 @@ def get_post(post_id):
 
 
 app = Flask(__name__)
+
+register_stocks_blueprint(app)
+
 app.config['SECRET_KEY'] = 'flask_secret_key'
 
 @app.route('/')
