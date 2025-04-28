@@ -1,0 +1,43 @@
+<!-- stocks/index.html -->
+{% extends "base.html" %}
+
+{% block title %}Stock Tracker{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Stock Tracker</h1>
+    
+    <div class="row">
+        {% for ticker, data in stock_data.items() %}
+        <div class="col-md-6 mb-4">
+            <div class="card {% if data.price_data.change > 0 %}border-success{% else %}border-danger{% endif %}">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h2>{{ data.company_data.name }} ({{ ticker }})</h2>
+                    <a href="{{ url_for('stocks.detail', ticker=ticker) }}" class="btn btn-primary">Details</a>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <h3>${{ "%.2f"|format(data.price_data.price) }}</h3>
+                        <span class="{% if data.price_data.change > 0 %}text-success{% else %}text-danger{% endif %} h4">
+                            {{ "%.2f"|format(data.price_data.change) }}
+                            ({{ "%.2f"|format(data.price_data.change_percent) }}%)
+                        </span>
+                    </div>
+                    <p class="text-muted">Last update: {{ data.price_data.timestamp }}</p>
+                    <hr>
+                    <p>{{ data.company_data.description|truncate(200) }}</p>
+                    <div class="row mt-3">
+                        <div class="col-6">
+                            <p><strong>Market Cap:</strong> ${{ "{:,.0f}".format(data.company_data.market_cap) }}</p>
+                        </div>
+                        <div class="col-6">
+                            <p><strong>Employees:</strong> {{ "{:,}".format(data.company_data.total_employees) }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
