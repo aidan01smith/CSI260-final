@@ -13,7 +13,6 @@
             <div class="card {% if data.price_data.change > 0 %}border-success{% else %}border-danger{% endif %}">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h2>{{ data.company_data.name }} ({{ ticker }})</h2>
-                    <a href="{{ url_for('stocks.detail', ticker=ticker) }}" class="btn btn-primary">Details</a>
                 </div>
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
