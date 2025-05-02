@@ -1,20 +1,43 @@
+"""
+Stock Tracking Module for Flask Application
+
+This module provides functionality to track and display stock market data using the Polygon.io API.
+It includes routes for viewing stock information, company details, and historical data.
+"""
+
 import os
 import requests
 import json
 from datetime import datetime, timedelta
 from flask import Blueprint, render_template, jsonify
 
-# Create a Blueprint for stock tracking
+# Create a Blueprint for stock tracking with URL prefix '/stocks'
 stocks_bp = Blueprint('stocks', __name__, url_prefix='/stocks')
 
-# Polygon.io API key
-API_KEY = "EkQ7aRzKfOzxTOjBQ5yXVp1gw50G0ydH"
-BASE_URL = "https://api.polygon.io"
+# API configuration
+API_KEY = "EkQ7aRzKfOzxTOjBQ5yXVp1gw50G0ydH"  # Polygon.io API key
+BASE_URL = "https://api.polygon.io"  # Base URL for Polygon API
 
-# Define the stocks to track
+# List of stock tickers to track
 STOCKS = ["NVDA", "AAPL"]
 
 def get_current_price(ticker):
+    """
+    Fetch the current price and market data for a given stock ticker.
+    
+    Args:
+        ticker (str): The stock ticker symbol (e.g., 'AAPL')
+    
+    Returns:
+        dict: Dictionary containing price data including:
+            - ticker: Stock symbol
+            - price: Current price
+            - volume: Trading volume
+            - change: Price change from open
+            - change_percent: Percentage change from open
+            - timestamp: Date of the data
+        None: If the request fails or data is unavailable
+    """
     endpoint = f"{BASE_URL}/v2/aggs/ticker/{ticker}/prev"
     params = {
         "apiKey": API_KEY
@@ -41,11 +64,27 @@ def get_current_price(ticker):
     return None
 
 def get_company_details(ticker):
+    """
+    Fetch company information and details for a given stock ticker.
+    
+    Args:
+        ticker (str): The stock ticker symbol
+    
+    Returns:
+        dict: Dictionary containing company details including:
+            - name: Company name
+            - description: Business description
+            - homepage_url: Company website
+            - market_cap: Market capitalization
+            - total_employees: Number of employees
+        None: If the request fails or data is unavailable
+    """
     endpoint = f"{BASE_URL}/v3/reference/tickers/{ticker}"
     params = {
         "apiKey": API_KEY
     }
-    
+
+    # Eployed the help of AI to make sure this was all correct and returned what I wanted
     try:
         response = requests.get(endpoint, params=params)
         data = response.json()
@@ -65,7 +104,23 @@ def get_company_details(ticker):
     return None
 
 def get_historical_data(ticker, days=30):
-    """Get historical price data for a stock ticker"""
+    """
+    Fetch historical price data for a stock ticker over a specified period.
+    
+    Args:
+        ticker (str): The stock ticker symbol
+        days (int): Number of days of historical data to retrieve (default: 30)
+    
+    Returns:
+        list: List of dictionaries containing daily price data including:
+            - date: Date of the data point
+            - open: Opening price
+            - high: Daily high price
+            - low: Daily low price
+            - close: Closing price
+            - volume: Trading volume
+        Empty list: If the request fails or data is unavailable
+    """
     end_date = datetime.now()
     start_date = end_date - timedelta(days=days)
     
@@ -75,7 +130,8 @@ def get_historical_data(ticker, days=30):
         "sort": "asc",
         "limit": 120
     }
-    
+
+    # I needed the help of AI to have the endpoint return what I wanted, though after reading the first few functions, it became pretty repetetive
     try:
         response = requests.get(endpoint, params=params)
         data = response.json()
@@ -100,10 +156,17 @@ def get_historical_data(ticker, days=30):
     
     return []
 
-# Create routes for the stock tracking functionality
+# Route Definitions
+
 @stocks_bp.route('/')
 def index():
-    """Main stocks page showing overview of tracked stocks"""
+    """
+    Main stocks page showing overview of all tracked stocks.
+    
+    Returns:
+        Rendered template 'stocks/index.html' with context containing:
+            - stock_data: Dictionary mapping tickers to their price and company data
+    """
     stock_data = {}
     
     for ticker in STOCKS:
@@ -120,7 +183,20 @@ def index():
 
 @stocks_bp.route('/detail/<ticker>')
 def detail(ticker):
-    """Detailed view for a specific stock"""
+    """
+    Detailed view page for a specific stock.
+    
+    Args:
+        ticker (str): The stock ticker symbol to display
+    
+    Returns:
+        Rendered template 'stocks/detail.html' with context containing:
+            - ticker: Stock symbol
+            - price_data: Current price information
+            - company_data: Company details
+            - historical_data: Historical price data
+        404 Error: If the ticker is not in the tracked stocks list
+    """
     if ticker not in STOCKS:
         return "Stock not tracked", 404
     
@@ -139,21 +215,39 @@ def detail(ticker):
 
 @stocks_bp.route('/api/data/<ticker>')
 def api_data(ticker):
-    """API endpoint to get stock data"""
+    """
+    API endpoint to get JSON data for a specific stock.
+    
+    Args:
+        ticker (str): The stock ticker symbol to retrieve data for
+    
+    Returns:
+        JSON response containing:
+            - ticker: Stock symbol
+            - current: Current price data
+            - historical: Historical price data
+        404 Error: If the ticker is not in the tracked stocks list
+    """
     if ticker not in STOCKS:
         return jsonify({"error": "Stock not tracked"}), 404
     
     price_data = get_current_price(ticker)
     historical_data = get_historical_data(ticker)
-    
+
+    # This was also assisted by AI to help understand how to not return an error with json in this instance
     return jsonify({
         "ticker": ticker,
         "current": price_data,
         "historical": historical_data
     })
 
-# Function to register the Blueprint with the Flask app
 def register_stocks_blueprint(app):
+    """
+    Register the stocks Blueprint with the Flask application and ensure template directory exists.
+    
+    Args:
+        app (Flask): The Flask application instance
+    """
     app.register_blueprint(stocks_bp)
     # Create a directory for the stock templates if it doesn't exist
     os.makedirs(os.path.join(app.template_folder, 'stocks'), exist_ok=True)
