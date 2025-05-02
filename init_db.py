@@ -1,3 +1,8 @@
+"""
+this literally just makes the database which stores all of the data for the blog page. I found documentation for this on a digital ocean flask tutorial
+"""
+
+
 import sqlite3
 
 connection = sqlite3.connect('database.db')
